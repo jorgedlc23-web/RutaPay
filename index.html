@@ -1,0 +1,154 @@
+
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>RutaPay</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5fa;--c:#fff;--c2:#eef0f7;--t:#14152b;--m:#7a7f99;--b:#e4e6f0;--p:#ef5b50;--ok:#22c55e;--no:#ef4444}
+[data-theme=dark]{--bg:#0f1021;--c:#191a30;--c2:#232440;--t:#f2f3fa;--m:#8e92b0;--b:#2a2c4a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:14px/1.45 Montserrat,system-ui,sans-serif;background:var(--bg);color:var(--t)}
+.top{position:sticky;top:0;z-index:6;background:var(--bg);padding:12px 16px 4px;max-width:900px;margin:auto}
+.tl,.row{display:flex;align-items:center;gap:10px}.row{flex-wrap:wrap;margin:8px 0}.sp{justify-content:space-between}.grow{flex:1;min-width:0}
+.logo{margin:auto;display:grid;filter:drop-shadow(0 10px 26px #ef3f5b66)}.logo.s{margin:0;flex:none;filter:none}.wm{font:800 19px Sora,sans-serif;letter-spacing:-.04em}.wm i{font-style:normal;color:var(--p)}
+.ib{width:38px;height:38px;border-radius:12px;border:0;background:var(--c);color:var(--t);display:grid;place-items:center;cursor:pointer;flex:none}.ib.d{color:var(--no)}
+.pills{display:flex;gap:8px;overflow-x:auto;padding:12px 0 8px}
+.chip{flex:none;display:inline-flex;gap:6px;align-items:center;border:1.5px solid var(--b);background:var(--c);color:var(--t);border-radius:999px;padding:8px 14px;font:600 13px Montserrat,sans-serif;cursor:pointer}.chip.on{background:var(--p);border-color:var(--p);color:#fff}
+main{max-width:900px;margin:auto;padding:6px 16px 120px}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));width:min(580px,calc(100% - 20px));display:flex;background:var(--c);border:1px solid var(--b);border-radius:22px;padding:6px;box-shadow:0 10px 30px #0005;z-index:7}
+nav button{flex:1;border:0;background:none;color:var(--m);display:flex;flex-direction:column;align-items:center;gap:3px;font:600 9px Montserrat,sans-serif;padding:7px 0;border-radius:16px;cursor:pointer}nav button.on{background:var(--p);color:#fff}
+.card{background:var(--c);border:1px solid var(--b);border-radius:18px;padding:14px}
+.k{color:var(--m);font-size:11px;font-weight:600}.v{font-size:21px;font-weight:800;margin-top:2px}.ok{color:var(--ok)}.no{color:var(--no)}.sm{font-size:12px;color:var(--m)}
+.sec{display:flex;align-items:center;gap:12px;margin:22px 0 12px;font-size:16px;font-weight:700}.sec::after{content:"";flex:1;height:2px;background:var(--b)}.sp .sec{flex:1}
+.gr{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.eg{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.st .ic{margin-bottom:8px}
+.hero{position:relative;overflow:hidden;background:var(--p);color:#fff;border-radius:22px;padding:20px;margin:10px 0;display:flex;justify-content:space-between;align-items:center}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:50%;background:#ffffff24}.hero>*{position:relative;z-index:1}.hero .k{color:#ffffffd0}.big2{font-size:28px;font-weight:800;margin:4px 0}
+button.p,.pill{border:0;border-radius:999px;background:var(--p);color:#fff;font:700 14px Montserrat,sans-serif;padding:11px 18px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+button.gh{border:0;border-radius:999px;background:var(--c2);color:var(--t);font:600 13px Montserrat,sans-serif;padding:10px 16px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+button.s{padding:8px 13px;font-size:12px}button.p.big,button.gh.big{flex:1;padding:15px;font-size:14px}.acts{display:flex;gap:8px;margin:10px 0}
+.av{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;background:var(--p);flex:none}
+.rc{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:16px;padding:11px 12px;margin-bottom:8px}
+.ic{width:40px;height:40px;border-radius:13px;background:var(--c2);color:var(--p);display:grid;place-items:center;flex:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.tag{padding:3px 10px;border-radius:20px;background:var(--c2);font-size:11px;font-weight:700}.tag.ok{background:#22c55e22;color:var(--ok)}
+.ln{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed var(--b);font-size:13px}.det{margin-top:10px}
+.bar{height:12px;border-radius:6px;background:var(--p)}.bar.b2{background:#f5a623}.pr{height:8px;border-radius:4px;background:var(--c2);overflow:hidden;margin-top:6px}.pr i{display:block;height:100%;background:var(--ok)}
+.pb{display:flex;align-items:center;justify-content:space-between;margin:8px 0}.rot{transform:rotate(180deg)}
+.bk{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:9;padding:14px}.md{background:var(--c);border-radius:22px;padding:20px;width:100%;max-width:430px;max-height:90vh;overflow:auto}.md h3{margin:0 0 6px}
+.fl{display:block;font-size:12px;color:var(--m);font-weight:600;margin:12px 0}
+input{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-radius:14px;background:var(--bg);color:var(--t);font:500 15px Montserrat,sans-serif}.chips~input{margin:0}
+.r{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+</style></head><body><div id="app"></div><div id="M"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ====== CONFIGURACIÓN DE SUPABASE ======
+const SUPABASE_URL = "https://dkevfipaqafwswdnvlrw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ncrsH45O6oJjQkGDx3dHAA_f5XpeNWU";
+// ======================================
+
+const cols=['offices','emps','pk','mv','loans','pays'];let S={};cols.forEach(c=>S[c]=[]);
+let sb=null,cur='',tab='dash';
+const ls=(k,v)=>{try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}};
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const $=n=>'RD$ '+(+n||0).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>new Date().toISOString().slice(0,10);
+let P=(()=>{const d=new Date();return{y:d.getFullYear(),m:d.getMonth()+1,q:d.getDate()<=15?1:2}})();
+const pk2=p=>`${p.y}-${String(p.m).padStart(2,'0')}-Q${p.q}`;
+const rng=p=>{const mm=String(p.m).padStart(2,'0'),l=new Date(p.y,p.m,0).getDate();return p.q==1?[`${p.y}-${mm}-01`,`${p.y}-${mm}-15`]:[`${p.y}-${mm}-16`,`${p.y}-${mm}-${l}`]};
+const shift=n=>{let i=P.y*24+(P.m-1)*2+(P.q-1)+n;P={y:Math.floor(i/24),m:Math.floor(i%24/2)+1,q:i%2+1};render()};
+const pname=()=>`${['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][P.m]} ${P.y} · ${P.q==1?'1ra (1-15)':'2da (16-fin)'} quincena`;
+
+async function put(c,o){if(!o.id)o.id=uid();const i=S[c].findIndex(x=>x.id==o.id);i<0?S[c].push(o):S[c][i]=o;if(sb)await sb.from(c).upsert(o);render()}
+async function del(c,id){S[c]=S[c].filter(x=>x.id!=id);if(sb)await sb.from(c).delete().eq('id',id);render()}
+
+let seeded=0;
+function seed(){if(!S.offices.length&&!seeded){seeded=1;['SCD Duarte','SCD Nagua'].forEach(n=>put('offices',{name:n,inc:90,rate:40,tax:3,ot:180}))}if(S.offices.length&&!S.offices.find(o=>o.id==cur))cur=(ls('off')&&S.offices.find(o=>o.id==ls('off')))?ls('off'):S.offices[0].id}
+
+async function init(){
+  document.documentElement.dataset.theme=ls('th')||'dark';
+  if(window.supabase && SUPABASE_URL){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    for(const c of cols){
+      const {data} = await sb.from(c).select('*');
+      if(data) S[c] = data;
+    }
+  }
+  seed();
+  render();
+}
+
+// cálculos y render
+const O=()=>S.offices.find(o=>o.id==cur)||{};
+const E=()=>S.emps.filter(e=>e.o==cur);
+const eName=id=>(S.emps.find(e=>e.id==id)||{name:'—'}).name;
+function calc(e,p0){const o=O(),[a,b]=rng(p0||P),inn=d=>d>=a&&d<=b,sum=t=>S.mv.filter(m=>m.e==e.id&&m.t==t&&inn(m.d)).reduce((s,m)=>s+m.n,0);
+ const n=S.pk.filter(x=>x.e==e.id&&x.t=='out'&&inn(x.d)).reduce((s,x)=>s+x.n,0),del=e.role=='Delivery';
+ const base=del?0:e.base/2,hv=(e.base||0)/23.83/8,ext=S.mv.filter(m=>m.e==e.id&&m.t=='extra'&&inn(m.d)).reduce((q,m)=>q+(m.v?m.n:m.n*hv*2),0),pp=n*e.rate,bon=sum('bono'),vac=sum('vac');
+ const gross=base+pp+bon+ext+vac,tax=gross*(o.tax??3)/100,av=sum('avance'),pe=sum('perdido');
+ const cuota=S.loans.filter(l=>l.e==e.id&&l.bal>0).reduce((s,l)=>s+Math.min(l.cuota,l.bal),0);
+ return{n,base,pp,bon,ext,vac,gross,tax,av,pe,cuota,net:gross-tax-av-pe-cuota}}
+function stats(oid){const[a,b]=rng(P),k=S.pk.filter(x=>x.o==oid&&x.d>=a&&x.d<=b),o=S.offices.find(x=>x.id==oid);
+ const out=k.filter(x=>x.t=='out').reduce((s,x)=>s+x.n,0),inn=k.filter(x=>x.t=='in').reduce((s,x)=>s+x.n,0);
+ const saved=S.pays.filter(x=>x.o==oid&&x.per==pk2(P));let cost;
+ if(oid==cur){cost=E().reduce((s,e)=>s+calc(e).gross,0)}else{const sv=saved.reduce((s,x)=>s+x.gross,0);cost=sv}
+ return{out,inn,rev:out*(o.inc||0),cost}}
+
+const I={dash:'<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.5 2 4.5 4.8"/>',box:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>',swap:'<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>',bank:'<path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',moon:'<path d="M20 14.5A8.5 8.5 0 119.5 4a7 7 0 0010.5 10.5z"/>',plus:'<path d="M12 5v14M5 12h14"/>',trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',edit:'<path d="M4 20l4-1 11-11-3-3L5 16z"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8h14v-8M12 8c-2-4-6-3-5 0M12 8c2-4 6-3 5 0"/>',cash:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="3"/>',alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',up:'<path d="M12 19V5M6 11l6-6 6 6"/>',down:'<path d="M12 5v14M6 13l6 6 6-6"/>',chev:'<path d="M9 6l6 6-6 6"/>',undo:'<path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3"/>',trend:'<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',coins:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',check:'<path d="M5 12.5l4.5 4.5L19 7"/>',office:'<path d="M4 21V5l8-2v18M12 9h8v12M7 9h2M7 13h2M7 17h2M15 13h2M15 17h2"/>'};
+const ic=(n,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[n]}</svg>`;
+const T=[['dash','dash','Panel'],['emps','users','Equipo'],['pk','box','Paquetes'],['mv','swap','Mov.'],['loans','bank','Préstamos'],['pay','receipt','Nómina'],['cfg','gear','Ajustes']];
+let flt={pk:'all',mv:'all',emp:'all'},opn='';
+const ini=n=>(n||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase(),empty='<div class="sm">Sin registros todavía</div>';
+const th=()=>{const n=document.documentElement.dataset.theme=='dark'?'light':'dark';document.documentElement.dataset.theme=n;ls('th',n)};
+const fch=(k,a)=>`<div class="chips">${a.map(y=>`<button class="chip ${flt[k]==y[0]?'on':''}" onclick="flt['${k}']='${y[0]}';render()">${y[1]}</button>`).join('')}</div>`;
+const L=(a,b,c)=>`<div class="ln"><span>${a}</span><b class="${c||''}">${b}</b></div>`;
+const TY={bono:['gift','Bono'],avance:['cash','Avance'],perdido:['alert','Paquete perdido'],extra:['clock','Horas extras'],vac:['sun','Vacaciones']};
+const sec=t=>`<h3 class="sec"><span>${t}</span></h3>`,st=(i,k,v,c='')=>`<div class="card st"><div class="ic">${ic(i)}</div><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`;
+const perBar=()=>`<div class="pb"><button class="ib" onclick="shift(-1)"><span class="rot">${ic('chev')}</span></button><b>${pname()}</b><button class="ib" onclick="shift(1)">${ic('chev')}</button></div>`;
+const LG=z=>`<svg width="${z}" height="${z}" viewBox="0 0 64 64"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a5c"/><stop offset="1" stop-color="#ee3a5a"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lg)"/><path d="M12 52c8 5 14-3 22 1s13-1 18-8" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="2.6" stroke-linecap="round" stroke-dasharray=".5 5.5"/><circle cx="52" cy="45" r="3.2" fill="#fff"/><path d="M32 9c-8 0-14 6-14 13.600C18 33 32 47 32 47s14-14 14-24.400C46 15 40 9 32 9z" fill="#fff"/><path d="M32 16.500l7 4v8l-7 4-7-4v-8z" fill="url(#lg)"/><path d="M25 20.500l7 4 7-4M32 24.500v7.500" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>`,WM='<span class="wm">Ruta<i>Pay</i></span>';
+
+function render(){
+  if(!S.offices.length) return app.innerHTML='<div class="card" style="margin:40px auto;max-width:300px;text-align:center"><p>Conectando a Supabase...</p></div>';
+  app.innerHTML=`<div class="top"><div class="tl"><div class="logo s">${LG(42)}</div><div class="grow">${WM}<div class="sm">${O().name||''}</div></div><button class="ib" onclick="th()">${ic('moon',18)}</button></div><div class="pills">${S.offices.map(o=>`<button class="chip ${o.id==cur?'on':''}" onclick="cur='${o.id}';ls('off',cur);render()">${ic('office',15)} ${o.name}</button>`).join('')}<button class="chip" onclick="newOffice()">${ic('plus',15)} Oficina</button></div></div><main>${V[tab]()}</main><nav>${T.map(t=>`<button class="${t[0]==tab?'on':''}" onclick="tab='${t[0]}';scrollTo(0,0);render()">${ic(t[1],20)}${t[2]}</button>`).join('')}</nav>`;
+}
+
+const V={
+dash(){const all=S.offices.map(o=>({o,...stats(o.id)})),s=stats(cur),mx=Math.max(1,...all.map(x=>Math.max(x.out,x.inn))),rank=E().filter(e=>e.role=='Delivery').map(e=>({e,n:calc(e).n})).sort((a,b)=>b.n-a.n).slice(0,5),g=s.rev-s.cost;
+ return perBar()+`<div class="hero"><div><div class="k">Ingreso neto · ${O().name}</div><div class="big2">${$(g)}</div><div class="k">Cobras ${$(s.rev)} − pagas ${$(s.cost)}</div></div>${ic('trend',44)}</div>${sec('Resumen')}<div class="gr">${st('up','Entregados',s.out)}${st('down','Recibidos',s.inn)}${st('box','Pendientes',s.inn-s.out,s.inn-s.out>0?'no':'ok')}${st('coins','Costo nómina',$(s.cost))}</div>${sec('Comparativo de oficinas')}<div class="card">${all.map(x=>`<div style="margin-bottom:14px"><b>${x.o.name}</b> <span class="sm">· ingreso neto ${$(x.rev-x.cost)}</span><div class="row" style="margin:6px 0 2px"><div class="bar" style="width:${Math.max(2,x.inn/mx*75)}%"></div><span class="sm">${x.inn} recibidos</span></div><div class="row" style="margin:2px 0"><div class="bar b2" style="width:${Math.max(2,x.out/mx*75)}%"></div><span class="sm">${x.out} entregados</span></div></div>`).join('')}<div class="sm">Total: ${all.reduce((a,x)=>a+x.inn,0)} recibidos · ${all.reduce((a,x)=>a+x.out,0)} entregados</div></div>${sec('Top deliverys')}${rank.map((r,i)=>`<div class="rc"><div class="av">${i+1}</div><b class="grow">${r.e.name}</b><b>${r.n}</b><span class="sm">paq.</span></div>`).join('')||empty}`},
+emps(){const l=E().filter(e=>flt.emp=='all'||e.role==flt.emp);return`<div class="row sp">${sec('Equipo')}<button class="p s" onclick="empForm()">${ic('plus',16)} Agregar</button></div>${fch('emp',[['all','Todos'],['Delivery','Deliverys'],['Secretario','Secretarios'],['Auxiliar','Auxiliares']])}<div class="eg">${l.map(e=>`<div class="card"><div class="row" style="margin:0"><div class="av">${ini(e.name)}</div><div class="grow"><b>${e.name}</b><div><span class="tag">${e.role}</span></div></div><button class="ib" onclick="empForm('${e.id}')">${ic('edit',17)}</button><button class="ib d" onclick="conf('¿Eliminar a ${e.name}?',()=>del('emps','${e.id}'))">${ic('trash',17)}</button></div>${L('Sueldo base',e.role=='Delivery'?'—':$(e.base))}${L('Pago por paquete',$(e.rate))}</div>`).join('')||empty}</div>`},
+pk(){const l=S.pk.filter(x=>x.o==cur&&(flt.pk=='all'||x.t==flt.pk)).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,40);return sec('Paquetes')+`<div class="acts"><button class="p big" onclick="pkForm('out')">${ic('up',18)} Entregados</button><button class="gh big" onclick="pkForm('in')">${ic('down',18)} Recibidos</button></div>${fch('pk',[['all','Todos'],['out','Entregados'],['in','Recibidos']])}${l.map(x=>`<div class="rc"><div class="ic">${ic(x.t=='out'?'up':'down')}</div><div class="grow"><b>${x.t=='out'?eName(x.e):'Paquetes recibidos'}</b><div class="sm">${x.d}</div></div><b>${x.n}</b><button class="ib d" onclick="del('pk','${x.id}')">${ic('trash',16)}</button></div>`).join('')||empty}`},
+mv(){const l=S.mv.filter(x=>x.o==cur&&(flt.mv=='all'||x.t==flt.mv)).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,40);return`<div class="row sp">${sec('Movimientos')}<button class="p s" onclick="mvForm()">${ic('plus',16)} Registrar</button></div>${fch('mv',[['all','Todos'],...Object.entries(TY).map(([k,v])=>[k,v[1]])])}${l.map(x=>`<div class="rc"><div class="ic">${ic(TY[x.t][0])}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${TY[x.t][1]} · ${x.d}${x.t=='extra'?` · ${x.h||x.n} h${x.v?' '+$(x.v):''}`:''}</div></div><b>${x.t=='extra'&&!x.v?x.n+' h':$(x.n)}</b><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`).join('')||empty}`},
+loans(){const l=S.loans.filter(x=>x.o==cur);return`<div class="row sp">${sec('Préstamos')}<button class="p s" onclick="loanForm()">${ic('plus',16)} Nuevo</button></div>${l.map(x=>`<div class="card" style="margin-bottom:10px"><div class="row" style="margin:0"><b class="grow">${eName(x.e)}</b><span class="tag ${x.bal<=0?'ok':''}">${x.bal<=0?'Saldado':'Activo'}</span></div><div class="sm">Total ${$(x.total)} · cuota quincenal ${$(x.cuota)} · ${x.d}</div><div class="v">${$(x.bal)} <span class="sm">pendiente</span></div><div class="pr"><i style="width:${(1-x.bal/x.total)*100}%"></i></div><div class="row">${x.bal>0?`<button class="p s" onclick="conf('¿Registrar pago total de ${$(x.bal)}?',()=>put('loans',{...S.loans.find(z=>z.id=='${x.id}'),bal:0}))">${ic('check',15)} Pagar total</button><button class="gh s" onclick="loanForm('${x.id}')">${ic('edit',15)} Editar</button>`:''}<button class="gh s" onclick="del('loans','${x.id}')">${ic('trash',15)}</button></div></div>`).join('')||empty}`},
+pay(){const R=E().map(e=>({e,c:calc(e),p:S.pays.find(x=>x.id==pk2(P)+e.id)})),T=R.reduce((s,r)=>s+(r.p||r.c).net,0),np=R.filter(r=>r.p).length;
+ return perBar()+`<div class="hero"><div><div class="k">Total a pagar</div><div class="big2">${$(T)}</div><div class="k">${np} de ${R.length} pagados · impuesto ${O().tax??3}%</div></div>${ic('receipt',44)}</div>`+(R.map(({e,c,p})=>{const x=p||c,op=opn==e.id;return`<div class="card" style="margin-bottom:10px"><div class="row" style="margin:0;flex-wrap:nowrap;cursor:pointer" onclick="opn=opn=='${e.id}'?'':'${e.id}';render()"><div class="av">${ini(e.name)}</div><div class="grow"><b>${e.name}</b><div class="sm">${e.role} · ${x.n} paquetes</div></div><div style="text-align:right"><b class="ok">${$(x.net)}</b><div>${p?'<span class="tag ok">Pagado</span>':'<span class="tag">Pendiente</span>'}</div></div></div>${op?`<div class="det">${L('Sueldo base (quincena)',$(x.base))}${L('Paquetes',$(x.pp))}${L('Bonos',$(x.bon))}${L('Horas extras',$(x.ext))}${L('Vacaciones',$(x.vac))}${L('Total bruto',$(x.gross))}${L('Impuesto',' -'+$(x.tax),'no')}${L('Avances',' -'+$(x.av),'no')}${L('Paquetes perdidos',' -'+$(x.pe),'no')}${L('Cuota préstamo',' -'+$(x.cuota),'no')}<div class="row">${p?`<button class="gh" onclick="unpay('${p.id}')">${ic('undo',16)} Anular pago</button>`:`<button class="p" onclick="pay('${e.id}')">${ic('check',16)} Guardar pago</button>`}</div></div>`:''}</div>`}).join('')||empty)},
+cfg(){const o=O();return sec(o.name)+`<div class="card">${L('Te pagan por paquete',$(o.inc))}${L('Pagas al delivery por paquete',$(o.rate))}${L('Te queda por paquete',$(o.inc-o.rate),'ok')}${L('Pago por hora extra',$(o.ot??180))}${L('Impuesto',(o.tax??3)+'%')}<div class="row"><button class="p s" onclick="offForm('${o.id}')">${ic('edit',15)} Editar oficina</button><button class="gh s" onclick="newOffice()">${ic('plus',15)} Nueva oficina</button></div></div>${sec('Estado')}<div class="card">🟢 Conectado a Supabase Cloud en tiempo real · Sin inicios de sesión.</div>`}};
+
+function conf(t,f){if(confirm(t))f()}
+const closeM=()=>M.innerHTML='';
+function form(t,f,cb,o={},af){M.innerHTML=`<div class="bk" onclick="if(event.target==this)closeM()"><form class="md" id="fm"><h3>${t}</h3>${f.map(x=>{const dv=o[x.k]??(x.o?x.o[0][0]:'');return`<div class="fl" data-k="${x.k}">${x.l}${x.o?`<input type="hidden" name="${x.k}" value="${dv}"><div class="chips">${x.o.map(y=>`<button type="button" class="chip ${y[0]==dv?'on':''}" data-v="${y[0]}">${y[1]}</button>`).join('')}</div>`:`<input name="${x.k}" type="${x.t||'text'}" step="any" inputmode="${x.t=='number'?'decimal':'text'}" value="${dv}" ${x.opt?'':'required'}>`}</div>`}).join('')}<div class="r"><button type="button" class="gh" onclick="closeM()">Cancelar</button><button class="p">Guardar</button></div></form></div>`;
+ fm.querySelectorAll('.chips').forEach(c=>c.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x==b));c.previousElementSibling.value=b.dataset.v;af&&af()});af&&af();
+ fm.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(fm));f.forEach(x=>{if(x.t=='number')d[x.k]=+d[x.k]||0});if(cb(d)!==0)closeM()}}
+const eo=()=>E().map(e=>[e.id,e.name]);
+function empForm(id){const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};form(id?'Editar empleado':'Nuevo empleado',[{k:'name',l:'Nombre'},{k:'role',l:'Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']]},{k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},{k:'rate',l:'Pago por paquete entregado',t:'number'}],d=>{put('emps',{...o,...d,o:cur})},o)}
+function pkForm(t){if(t=='out'&&!E().length)return alert('Primero agrega personal');form(t=='out'?'Paquetes entregados':'Paquetes recibidos',[...(t=='out'?[{k:'e',l:'Delivery',o:eo()}]:[]),{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Cantidad',t:'number'}],d=>{put('pk',{...d,t,o:cur})},{d:today()})}
+function mvForm(){if(!E().length)return alert('Primero agrega personal');
+ const af=()=>{const ex=fm.t.value=='extra';[['n',!ex],['h',ex],['v',ex]].forEach(([k,v])=>fm.querySelector(`[data-k=${k}]`).style.display=v?'':'none');if(ex&&!fm.v.dataset.u)fm.v.value=O().ot??180;
+  if(!fm.querySelector('#tt'))fm.querySelector('.r').insertAdjacentHTML('beforebegin','<div id="tt" class="card" style="text-align:center"></div>');
+  const tt=()=>fm.querySelector('#tt').innerHTML=ex?`<span class="sm">Total horas extras</span><div class="v ok">${$(fm.h.value*fm.v.value)}</div>`:'';fm.v.oninput=()=>{fm.v.dataset.u=1};fm.oninput=tt;tt()};
+ form('Nuevo movimiento',[{k:'e',l:'Empleado',o:eo()},{k:'t',l:'Tipo',o:Object.entries(TY).map(([k,v])=>[k,ic(v[0],15)+' '+v[1]])},{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Monto (RD$)',t:'number',opt:1},{k:'h',l:'Cantidad de horas extras',t:'number',opt:1},{k:'v',l:'Valor por hora (RD$ 180 por defecto, editable)',t:'number',opt:1}],d=>{if(d.t=='extra'){if(!(d.h>0&&d.v>0))return alert('Indica horas y valor por hora'),0;d.n=+(d.h*d.v).toFixed(2)}else{if(!(d.n>0))return alert('Indica el monto'),0;delete d.h;delete d.v}put('mv',{...d,o:cur})},{d:today()},af)}
+function loanForm(id){if(!E().length)return alert('Primero agrega personal');const o=S.loans.find(x=>x.id==id)||{d:today()};form('Préstamo',[{k:'e',l:'Empleado',o:eo()},{k:'total',l:'Monto del préstamo',t:'number'},{k:'cuota',l:'Cuota por quincena',t:'number'},{k:'d',l:'Fecha',t:'date'}],d=>{put('loans',{...o,...d,bal:id?Math.min(o.bal,d.total):d.total,o:cur})},o)}
+function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:'rate',l:'Pagas al delivery por paquete',t:'number'},{k:'ot',l:'Pago por hora extra',t:'number'},{k:'tax',l:'Impuesto %',t:'number'}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
+const newOffice=()=>offForm();
+function pay(id){const e=S.emps.find(x=>x.id==id),c=calc(e);S.loans.filter(l=>l.e==id&&l.bal>0).forEach(l=>{put('loans',{...l,bal:l.bal-Math.min(l.cuota,l.bal)})});put('pays',{...c,id:pk2(P)+id,e:id,o:cur,per:pk2(P),date:today()})}
+function unpay(pid){const p=S.pays.find(x=>x.id==pid);conf('¿Anular este pago? Se restaura el saldo del préstamo.',()=>{let r=p.cuota;S.loans.filter(l=>l.e==p.e&&l.total>l.bal).forEach(l=>{const q=Math.min(r,l.total-l.bal);r-=q;put('loans',{...l,bal:l.bal+q})});del('pays',pid)})}
+
+init();
+
+// Bloque automático antiflotantes para Netlify
+setInterval(()=>{
+  document.querySelectorAll('body > div, body > ins, body > iframe').forEach(el => {
+    if(el.id !== 'app' && el.id !== 'M' && (el.innerHTML.includes('Netlify') || el.querySelector('a[href*="netlify"]'))){
+      el.remove();
+    }
+  });
+}, 400);
+</script>
+</body>
+</html>
