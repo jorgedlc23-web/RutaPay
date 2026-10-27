@@ -120,8 +120,6 @@ function render(){
 const V={
 dash(){
   const all=S.offices.map(o=>({o,...stats(o.id)})),s=stats(cur),mx=Math.max(1,...all.map(x=>Math.max(x.out,x.inn))),rank=E().filter(e=>e.role=='Delivery').map(e=>({e,n:calc(e).n})).sort((a,b)=>b.n-a.n).slice(0,5),g=s.rev-s.cost;
-  
-  // CORRECCIÓN AQUÍ: Evita negativos en pendientes si no hay recibidos o si entregados es mayor sin recibidos base
   const pendientesCalc = s.inn > 0 ? Math.max(0, s.inn - s.out) : 0;
 
   return perBar()+`<div class="hero"><div><div class="k">Ingreso neto · ${O().name}</div><div class="big2">${$(g)}</div><div class="k">Cobras ${$(s.rev)} − pagas ${$(s.cost)}</div></div>${ic('trend',44)}</div>${sec('Resumen')}<div class="gr">${st('up','Entregados',s.out)}${st('down','Recibidos',s.inn)}${st('box','Pendientes',pendientesCalc,pendientesCalc>0?'no':'ok')}${st('coins','Costo nómina',$(s.cost))}</div>${sec('Comparativo de oficinas')}<div class="card">${all.map(x=>`<div style="margin-bottom:14px"><b>${x.o.name}</b> <span class="sm">· ingreso neto ${$(x.rev-x.cost)}</span><div class="row" style="margin:6px 0 2px"><div class="bar" style="width:${Math.max(2,x.inn/mx*75)}%"></div><span class="sm">${x.inn} recibidos</span></div><div class="row" style="margin:2px 0"><div class="bar b2" style="width:${Math.max(2,x.out/mx*75)}%"></div><span class="sm">${x.out} entregados</span></div></div>`).join('')}<div class="sm">Total: ${all.reduce((a,x)=>a+x.inn,0)} recibidos · ${all.reduce((a,x)=>a+x.out,0)} entregados</div></div>${sec('Top deliverys')}${rank.map((r,i)=>`<div class="rc"><div class="av">${i+1}</div><b class="grow">${r.e.name}</b><b>${r.n}</b><span class="sm">paq.</span></div>`).join('')||empty}`
@@ -136,17 +134,52 @@ cfg(){const o=O();return sec(o.name)+`<div class="card">${L('Te pagan por paquet
 
 function conf(t,f){if(confirm(t))f()}
 const closeM=()=>M.innerHTML='';
-function form(t,f,cb,o={},af){M.innerHTML=`<div class="bk" onclick="if(event.target==this)closeM()"><form class="md" id="fm"><h3>${t}</h3>${f.map(x=>{const dv=o[x.k]??(x.o?x.o[0][0]:'');return`<div class="fl" data-k="${x.k}">${x.l}${x.o?`<input type="hidden" name="${x.k}" value="${dv}"><div class="chips">${x.o.map(y=>`<button type="button" class="chip ${y[0]==dv?'on':''}" data-v="${y[0]}">${y[1]}</button>`).join('')}</div>`:`<input name="${x.k}" type="${x.t||'text'}" step="any" inputmode="${x.t=='number'?'decimal':'text'}" value="${dv}" ${x.opt?'':'required'}>`}</div>`}).join('')}<div class="r"><button type="button" class="gh" onclick="closeM()">Cancelar</button><button class="p">Guardar</button></div></form></div>`;
- fm.querySelectorAll('.chips').forEach(c=>c.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x==b));c.previousElementSibling.value=b.dataset.v;af&&af()});af&&af();
- fm.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(fm));f.forEach(x=>{if(x.t=='number')d[x.k]=+d[x.k]||0});if(cb(d)!==0)closeM()}}
+
+// FORMULARIO MULTI-GUARDADO FLUIDO
+function form(t,f,cb,o={},af,keepOpen=false){
+  M.innerHTML=`<div class="bk" onclick="if(event.target==this)closeM()"><form class="md" id="fm"><h3>${t}</h3>${f.map(x=>{const dv=o[x.k]??(x.o?x.o[0][0]:'');return`<div class="fl" data-k="${x.k}">${x.l}${x.o?`<input type="hidden" name="${x.k}" value="${dv}"><div class="chips">${x.o.map(y=>`<button type="button" class="chip ${y[0]==dv?'on':''}" data-v="${y[0]}">${y[1]}</button>`).join('')}</div>`:`<input name="${x.k}" type="${x.t||'text'}" step="any" inputmode="${x.t=='number'?'decimal':'text'}" value="${dv}" ${x.opt?'':'required'}>`}</div>`}).join('')}<div class="r"><button type="button" class="gh" onclick="closeM()">${keepOpen?'Listo':'Cancelar'}</button><button class="p">${keepOpen?'Guardar y seguir':'Guardar'}</button></div></form></div>`;
+  
+  fm.querySelectorAll('.chips').forEach(c=>c.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x==b));c.previousElementSibling.value=b.dataset.v;af&&af()});af&&af();
+  
+  fm.onsubmit=async e=>{
+    e.preventDefault();
+    const d=Object.fromEntries(new FormData(fm));
+    f.forEach(x=>{if(x.t=='number')d[x.k]=+d[x.k]||0});
+    if(await cb(d)!==0){
+      if(keepOpen){
+        // Limpia el número ingresado para dejarlo listo para el siguiente
+        const numInput = fm.querySelector('input[name="n"]');
+        if(numInput) numInput.value = '';
+        numInput && numInput.focus();
+      } else {
+        closeM();
+      }
+    }
+  }
+}
+
 const eo=()=>E().map(e=>[e.id,e.name]);
 function empForm(id){const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};form(id?'Editar empleado':'Nuevo empleado',[{k:'name',l:'Nombre'},{k:'role',l:'Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']]},{k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},{k:'rate',l:'Pago por paquete entregado',t:'number'}],d=>{put('emps',{...o,...d,o:cur})},o)}
-function pkForm(t){if(t=='out'&&!E().length)return alert('Primero agrega personal');form(t=='out'?'Paquetes entregados':'Paquetes recibidos',[...(t=='out'?[{k:'e',l:'Delivery',o:eo()}]:[]),{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Cantidad',t:'number'}],d=>{put('pk',{...d,t,o:cur})},{d:today()})}
+
+function pkForm(t){
+  if(t=='out'&&!E().length)return alert('Primero agrega personal');
+  const isOut = t=='out';
+  form(
+    isOut?'Paquetes entregados':'Paquetes recibidos',
+    [...(isOut?[{k:'e',l:'Delivery',o:eo()}]:[]),{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Cantidad de paquetes',t:'number'}],
+    async d=>{ await put('pk',{...d,t,o:cur}); },
+    {d:today()},
+    null,
+    isOut // Si es "Entregados", mantiene la ventana abierta para seguir agregando más deliverys
+  )
+}
+
 function mvForm(){if(!E().length)return alert('Primero agrega personal');
  const af=()=>{const ex=fm.t.value=='extra';[['n',!ex],['h',ex],['v',ex]].forEach(([k,v])=>fm.querySelector(`[data-k=${k}]`).style.display=v?'':'none');if(ex&&!fm.v.dataset.u)fm.v.value=O().ot??180;
   if(!fm.querySelector('#tt'))fm.querySelector('.r').insertAdjacentHTML('beforebegin','<div id="tt" class="card" style="text-align:center"></div>');
   const tt=()=>fm.querySelector('#tt').innerHTML=ex?`<span class="sm">Total horas extras</span><div class="v ok">${$(fm.h.value*fm.v.value)}</div>`:'';fm.v.oninput=()=>{fm.v.dataset.u=1};fm.oninput=tt;tt()};
  form('Nuevo movimiento',[{k:'e',l:'Empleado',o:eo()},{k:'t',l:'Tipo',o:Object.entries(TY).map(([k,v])=>[k,ic(v[0],15)+' '+v[1]])},{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Monto (RD$)',t:'number',opt:1},{k:'h',l:'Cantidad de horas extras',t:'number',opt:1},{k:'v',l:'Valor por hora (RD$ 180 por defecto, editable)',t:'number',opt:1}],d=>{if(d.t=='extra'){if(!(d.h>0&&d.v>0))return alert('Indica horas y valor por hora'),0;d.n=+(d.h*d.v).toFixed(2)}else{if(!(d.n>0))return alert('Indica el monto'),0;delete d.h;delete d.v}put('mv',{...d,o:cur})},{d:today()},af)}
+
 function loanForm(id){if(!E().length)return alert('Primero agrega personal');const o=S.loans.find(x=>x.id==id)||{d:today()};form('Préstamo',[{k:'e',l:'Empleado',o:eo()},{k:'total',l:'Monto del préstamo',t:'number'},{k:'cuota',l:'Cuota por quincena',t:'number'},{k:'d',l:'Fecha',t:'date'}],d=>{put('loans',{...o,...d,bal:id?Math.min(o.bal,d.total):d.total,o:cur})},o)}
 function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:'rate',l:'Pagas al delivery por paquete',t:`number`},{k:'ot',l:'Pago por hora extra',t:'number'},{k:'tax',l:'Impuesto %',t:`number`}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
 const newOffice=()=>offForm();
