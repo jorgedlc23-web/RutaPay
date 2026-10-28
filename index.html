@@ -106,7 +106,6 @@ function calc(e,p0){
  const n=S.pk.filter(x=>x.e==e.id&&x.t=='out'&&inn(x.d)).reduce((s,x)=>s+x.n,0),del=e.role=='Delivery';
  const base=del?0:e.base/2;
  
- // SUMA Y EVALUACIÓN DIRECTA DE HORAS EXTRAS
  const ext=S.mv.filter(m=>m.e==e.id&&(m.t=='extra'||!m.t||m.h>0)&&inn(m.d)).reduce((q,m)=>{
    const tarifa = m.v || o.ot || 180;
    if(m.n > 0 && (!m.h || m.n > m.h)) return q + m.n;
@@ -312,6 +311,7 @@ function pkForm(t, id){
   )
 }
 
+// FIX DE FECHA EN REGISTRO DE MOVIMIENTO
 function mvForm(){
   if(!E().length)return alert('Primero agrega personal');
   
@@ -337,6 +337,8 @@ function mvForm(){
       {k:'h',l:'Oculto',t:'number',opt:1}
     ],
     d=>{
+      // Respeta fielmente la fecha seleccionada por el usuario
+      if(!d.d) d.d = today();
       if(d.t=='extra' || !d.t){
         d.t = 'extra';
         const tarifaHora = O().ot ?? 180;
@@ -344,7 +346,6 @@ function mvForm(){
         d.h = cantHoras;
         d.n = +(cantHoras * tarifaHora).toFixed(2);
       }
-      if(!d.d) d.d = today();
       if(!(d.n>0))return alert('Indica un monto o cantidad válida'),0;
       put('mv',{...d,o:cur});
     },
