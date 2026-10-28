@@ -32,7 +32,7 @@ button.s{padding:8px 13px;font-size:12px}button.p.big,button.gh.big{flex:1;paddi
 .av{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;background:var(--p);flex:none}
 .rc{display:flex;align-items:center;gap:12px;background:var(--c);border:1px solid var(--b);border-radius:16px;padding:11px 12px;margin-bottom:8px}
 .ic{width:40px;height:40px;border-radius:13px;background:var(--c2);color:var(--p);display:grid;place-items:center;flex:none}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.tag{padding:3px 10px;border-radius:20px;background:var(--c2);font-size:11px;font-weight:700}.tag.ok{background:#22c55e22;color:var(--ok)}
+.chips{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding:4px 0 10px;margin:4px 0}.tag{padding:4px 12px;border-radius:20px;background:var(--c2);font-size:11px;font-weight:700;color:var(--p)}.tag.ok{background:#22c55e22;color:var(--ok)}
 .ln{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed var(--b);font-size:13px}.det{margin-top:10px}
 .bar{height:12px;border-radius:6px;background:var(--p)}.bar.b2{background:#f5a623}.pr{height:8px;border-radius:4px;background:var(--c2);overflow:hidden;margin-top:6px}.pr i{display:block;height:100%;background:var(--ok)}
 .pb{display:flex;align-items:center;justify-content:space-between;margin:8px 0}.rot{transform:rotate(180deg)}
@@ -41,7 +41,6 @@ button.s{padding:8px 13px;font-size:12px}button.p.big,button.gh.big{flex:1;paddi
 input,select{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-radius:14px;background:var(--bg);color:var(--t);font:500 15px Montserrat,sans-serif}.chips~input{margin:0}
 .r{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
-/* ESTILOS DESTACADOS PARA FECHAS Y CANTIDADES EN PAQUETES */
 .day-card{background:var(--c);border:1.5px solid var(--b);border-radius:16px;margin-bottom:12px;overflow:hidden}
 .day-header-btn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--c2);border:0;color:var(--t);font:700 14px Montserrat,sans-serif;cursor:pointer;text-align:left}
 .day-header-btn .date-title{display:flex;align-items:center;gap:8px;color:var(--p)}
@@ -128,7 +127,6 @@ function render(){
   app.innerHTML=`<div class="top"><div class="tl"><div class="logo s">${LG(42)}</div><div class="grow">${WM}<div class="sm">${O().name||''}</div></div><button class="ib" onclick="th()">${ic('moon',18)}</button></div><div class="pills">${S.offices.map(o=>`<button class="chip ${o.id==cur?'on':''}" onclick="cur='${o.id}';ls('off',cur);render()">${ic('office',15)} ${o.name}</button>`).join('')}<button class="chip" onclick="newOffice()">${ic('plus',15)} Oficina</button></div></div><main>${V[tab]()}</main><nav>${T.map(t=>`<button class="${t[0]==tab?'on':''}" onclick="tab='${t[0]}';scrollTo(0,0);render()">${ic(t[1],20)}${t[2]}</button>`).join('')}</nav>`;
 }
 
-// Guardar qué días están abiertos/cerrados en la interfaz de Paquetes
 let openDays = {};
 
 function toggleDay(date){
@@ -138,12 +136,19 @@ function toggleDay(date){
 
 const V={
 dash(){
-  const all=S.offices.map(o=>({o,...stats(o.id)})),s=stats(cur),mx=Math.max(1,...all.map(x=>Math.max(x.out,x.inn))),rank=E().filter(e=>e.role=='Delivery').map(e=>({e,n:calc(e).n})).sort((a,b)=>b.n-a.n).slice(0,5),g=s.rev-s.cost;
+  const all=S.offices.map(o=>({o,...stats(o.id)})),s=stats(cur),mx=Math.max(1,...all.map(x=>Math.max(x.out,x.inn))),g=s.rev-s.cost;
+  
+  // RANKING CORREGIDO: Ordenamiento estricto por cantidad de paquetes entregados en la quincena activa
+  const rank=E().filter(e=>e.role=='Delivery').map(e=>({e,n:calc(e).n})).sort((a,b)=>b.n-a.n).slice(0,5);
+
   const pendientesCalc = s.inn > 0 ? Math.max(0, s.inn - s.out) : 0;
 
   return perBar()+`<div class="hero"><div><div class="k">Ingreso neto · ${O().name}</div><div class="big2">${$(g)}</div><div class="k">Cobras ${$(s.rev)} − pagas ${$(s.cost)}</div></div>${ic('trend',44)}</div>${sec('Resumen')}<div class="gr">${st('up','Hoy (Entregados)',s.todayOut,'ok')}${st('up','Quincena',s.out)}${st('down','Recibidos',s.inn)}${st('box','Pendientes',pendientesCalc,pendientesCalc>0?'no':'ok')}${st('coins','Costo nómina',$(s.cost))}</div>${sec('Comparativo de oficinas')}<div class="card">${all.map(x=>`<div style="margin-bottom:14px"><b>${x.o.name}</b> <span class="sm">· ingreso neto ${$(x.rev-x.cost)}</span><div class="row" style="margin:6px 0 2px"><div class="bar" style="width:${Math.max(2,x.inn/mx*75)}%"></div><span class="sm">${x.inn} recibidos</span></div><div class="row" style="margin:2px 0"><div class="bar b2" style="width:${Math.max(2,x.out/mx*75)}%"></div><span class="sm">${x.out} entregados</span></div></div>`).join('')}<div class="sm">Total: ${all.reduce((a,x)=>a+x.inn,0)} recibidos · ${all.reduce((a,x)=>a+x.out,0)} entregados</div></div>${sec('Top deliverys')}${rank.map((r,i)=>`<div class="rc"><div class="av">${i+1}</div><b class="grow">${r.e.name}</b><b>${r.n}</b><span class="sm">paq.</span></div>`).join('')||empty}`
 },
-emps(){const l=E().filter(e=>flt.emp=='all'||e.role==flt.emp);return`<div class="row sp">${sec('Equipo')}<button class="p s" onclick="empForm()">${ic('plus',16)} Agregar</button></div>${fch('emp',[['all','Todos'],['Delivery','Deliverys'],['Secretario','Secretarios'],['Auxiliar','Auxiliares']])}<div class="eg">${l.map(e=>`<div class="card"><div class="row" style="margin:0"><div class="av">${ini(e.name)}</div><div class="grow"><b>${e.name}</b><div><span class="tag">${e.role}</span></div></div><button class="ib" onclick="empForm('${e.id}')">${ic('edit',17)}</button><button class="ib d" onclick="conf('¿Eliminar a ${e.name}?',()=>del('emps','${e.id}'))">${ic('trash',17)}</button></div>${L('Sueldo base',e.role=='Delivery'?'—':$(e.base))}${L('Pago por paquete',$(e.rate))}</div>`).join('')||empty}</div>`},
+emps(){
+  const l=E().filter(e=>flt.emp=='all'||e.role==flt.emp);
+  return`<div class="row sp">${sec('Equipo')}<button class="p s" onclick="empForm()">${ic('plus',16)} Agregar</button></div>${fch('emp',[['all','Todos'],['Delivery','Deliverys'],['Secretario','Secretarios'],['Auxiliar','Auxiliares']])}<div class="eg">${l.map(e=>`<div class="card" style="margin-bottom:10px;"><div class="row" style="margin:0"><div class="av">${ini(e.name)}</div><div class="grow"><b style="font-size:15px">${e.name}</b><div style="margin-top:4px"><span class="tag">${e.role}</span></div></div><button class="ib" onclick="empForm('${e.id}')">${ic('edit',17)}</button><button class="ib d" onclick="conf('¿Eliminar a ${e.name}?',()=>del('emps','${e.id}'))">${ic('trash',17)}</button></div>${L('Sueldo base',e.role=='Delivery'?'—':$(e.base))}${L('Pago por paquete',$(e.rate))}</div>`).join('')||empty}</div>`
+},
 pk(){
   const [a,b] = rng(P);
   const list = S.pk.filter(x=>x.o==cur && x.d>=a && x.d<=b && (flt.pk=='all'||x.t==flt.pk)).sort((x,y)=>y.d.localeCompare(x.d));
@@ -161,7 +166,6 @@ pk(){
     const totalDayOut = groups[date].filter(x=>x.t=='out').reduce((s,x)=>s+x.n,0);
     const totalDayIn = groups[date].filter(x=>x.t=='in').reduce((s,x)=>s+x.n,0);
     
-    // El día de hoy siempre aparece abierto por defecto, los días pasados cerrados hasta dar un toque
     if (openDays[date] === undefined) {
       openDays[date] = (date === tDay);
     }
@@ -232,7 +236,21 @@ function form(t,f,cb,o={},af,keepOpen=false){
 }
 
 const eo=()=>E().map(e=>[e.id,e.name]);
-function empForm(id){const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};form(id?'Editar empleado':'Nuevo empleado',[{k:'name',l:'Nombre'},{k:'role',l:'Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']]},{k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},{k:'rate',l:'Pago por paquete entregado',t:'number'}],d=>{put('emps',{...o,...d,o:cur})},o)}
+
+function empForm(id){
+  const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};
+  form(
+    id?'Editar empleado':'Nuevo empleado',
+    [
+      {k:'name',l:'Nombre completo'},
+      {k:'role',l:'Selecciona el Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']],isSelect:true},
+      {k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},
+      {k:'rate',l:'Pago por paquete entregado',t:'number'}
+    ],
+    d=>{put('emps',{...o,...d,o:cur})},
+    o
+  )
+}
 
 function pkForm(t, id){
   if(t=='out'&&!E().length)return alert('Primero agrega personal');
@@ -260,7 +278,7 @@ function loanForm(id){if(!E().length)return alert('Primero agrega personal');con
 function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:'rate',l:'Pagas al delivery por paquete',t:`number`},{k:'ot',l:'Pago por hora extra',t:'number'},{k:'tax',l:'Impuesto %',t:`number`}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
 const newOffice=()=>offForm();
 function pay(id){const e=S.emps.find(x=>x.id==id),c=calc(e);S.loans.filter(l=>l.e==id&&l.bal>0).forEach(l=>{put('loans',{...l,bal:l.bal-Math.min(l.cuota,l.bal)})});put('pays',{...c,id:pk2(P)+id,e:id,o:cur,per:pk2(P),date:today()})}
-function unpay(pid){const p=S.pays.find(x=>x.id==pid);conf('¿Anular este pago? Se restaura el saldo del préstamo.',()=>{let r=p.cuota;S.loans.filter(l=>l.e==p.e&&l.total>l.bal).forEach(l=>{const q=Math.min(r,l.total-l.bal);r-=q;put('loans',{...l,bal:l.bal+q})});del('pays',pid)})}
+function unpay(pid){const p=S.pays.find(x=>x.id==pid);conf('¿Anular este pago? Se restaura el saldo del préstamo.',()=>{let r=p.cuota;S.loans.filter(l=>l.e==p.e&&l.total-l.bal).forEach(l=>{const q=Math.min(r,l.total-l.bal);r-=q;put('loans',{...l,bal:l.bal+q})});del('pays',pid)})}
 
 init();
 </script>
