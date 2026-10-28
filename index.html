@@ -224,7 +224,7 @@ mv(){
     const montoCalculado = typeKey === 'extra' ? (x.n > 0 && (!x.h || x.n > x.h) ? x.n : (x.h || x.n || 0) * tarifa) : x.n;
     const descExtra = typeKey === 'extra' ? ` · ${(x.h||x.n||0)} h (${$(montoCalculado)})` : '';
     
-    return`<div class="rc"><div class="ic">${ic(typeIcon)}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${typeLabel} · ${x.d||today()}${descExtra}</div></div><b>${$(montoCalculado)}</b><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`;
+    return`<div class="rc"><div class="ic">${ic(typeIcon)}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${typeLabel} · ${x.d||today()}${descExtra}</div></div><b>${$(montoCalculado)}</b><button class="ib" onclick="mvForm('${x.id}')">${ic('edit',16)}</button><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`;
   }).join('')||empty}`
 },
 loans(){const l=S.loans.filter(x=>x.o==cur);return`<div class="row sp">${sec('Préstamos')}<button class="p s" onclick="loanForm()">${ic('plus',16)} Nuevo</button></div>${l.map(x=>`<div class="card" style="margin-bottom:10px"><div class="row" style="margin:0"><b class="grow">${eName(x.e)}</b><span class="tag ${x.bal<=0?'ok':''}">${x.bal<=0?'Saldado':'Activo'}</span></div><div class="sm">Total ${$(x.total)} · cuota quincenal ${$(x.cuota)} · ${x.d}</div><div class="v">${$(x.bal)} <span class="sm">pendiente</span></div><div class="pr"><i style="width:${(1-x.bal/x.total)*100}%"></i></div><div class="row">${x.bal>0?`<button class="p s" onclick="conf('¿Registrar pago total de ${$(x.bal)}?',()=>put('loans',{...S.loans.find(z=>z.id=='${x.id}'),bal:0}))">${ic('check',15)} Pagar total</button><button class="gh s" onclick="loanForm('${x.id}')">${ic('edit',15)} Editar</button>`:''}<button class="gh s" onclick="del('loans','${x.id}')">${ic('trash',15)}</button></div></div>`).join('')||empty}`},
@@ -311,10 +311,15 @@ function pkForm(t, id){
   )
 }
 
-// FORMULARIO DE MOVIMIENTOS - CORREGIDO DEFINITIVAMENTE
-function mvForm(){
+// FORMULARIO DE MOVIMIENTOS CON SOPORTE DE EDICIÓN
+function mvForm(id){
   if(!E().length)return alert('Primero agrega personal');
   
+  const existing = id ? S.mv.find(x=>x.id==id) : null;
+  // Si es hora extra guardada, mostramos las horas 'h' en lugar del monto total calculado
+  let initialVal = existing ? (existing.t == 'extra' ? (existing.h || existing.n) : existing.n) : '';
+  const initialData = existing ? {...existing, n: initialVal} : {d:today(), n:'', t:'extra'};
+
   const af=()=>{
     const tipoSelect = fm.querySelector('select[name="t"]');
     const updateLabel = () => {
@@ -334,7 +339,7 @@ function mvForm(){
   };
 
   form(
-    'Nuevo movimiento',
+    id ? 'Editar movimiento' : 'Nuevo movimiento',
     [
       {k:'e',l:'Empleado',o:eo(),isSelect:true},
       {k:'t',l:'Tipo de movimiento',o:Object.entries(TY).map(([k,v])=>[k,v[1]]),isSelect:true},
@@ -352,15 +357,15 @@ function mvForm(){
         d.n = +(cantHoras * tarifaHora).toFixed(2);
       }
       if(!(d.n>0))return alert('Indica un monto o cantidad válida'),0;
-      put('mv',{...d,o:cur});
+      put('mv',{...(existing || {}), ...d, o:cur});
     },
-    {d:today(),n:'',t:'extra'},
+    initialData,
     af
   );
 }
 
 function loanForm(id){if(!E().length)return alert('Primero agrega personal');const o=S.loans.find(x=>x.id==id)||{d:today()};form('Préstamo',[{k:'e',l:'Empleado',o:eo(),isSelect:true},{k:'total',l:'Monto del préstamo',t:'number'},{k:'cuota',l:'Cuota por quincena',t:'number'},{k:'d',l:'Fecha',t:'date'}],d=>{put('loans',{...o,...d,bal:id?Math.min(o.bal,d.total):d.total,o:cur})},o)}
-function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:'rate',l:'Pagas al delivery por paquete',t:`number`},{k:'ot',l:'Pago por hora extra',t:`number`},{k:'tax',l:'Impuesto %',t:`number`}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
+function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:`rate`,l:'Pagas al delivery por paquete',t:`number`},{k:'ot',l:'Pago por hora extra',t:`number`},{k:'tax',l:'Impuesto %',t:`number`}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
 const newOffice=()=>offForm();
 function pay(id){const e=S.emps.find(x=>x.id==id),c=calc(e);S.loans.filter(l=>l.e==id&&l.bal>0).forEach(l=>{put('loans',{...l,bal:l.bal-Math.min(l.cuota,l.bal)})});put('pays',{...c,id:pk2(P)+id,e:id,o:cur,per:pk2(P),date:today()})}
 function unpay(pid){const p=S.pays.find(x=>x.id==pid);conf('¿Anular este pago? Se restaura el saldo del préstamo.',()=>{let r=p.cuota;S.loans.filter(l=>l.e==p.e&&l.total>l.bal).forEach(l=>{const q=Math.min(r,l.total-l.bal);r-=q;put('loans',{...l,bal:l.bal+q})});del('pays',pid)})}
