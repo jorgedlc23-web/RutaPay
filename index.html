@@ -38,7 +38,7 @@ button.s{padding:8px 13px;font-size:12px}button.p.big,button.gh.big{flex:1;paddi
 .pb{display:flex;align-items:center;justify-content:space-between;margin:8px 0}.rot{transform:rotate(180deg)}
 .bk{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:9;padding:14px}.md{background:var(--c);border-radius:22px;padding:20px;width:100%;max-width:430px;max-height:90vh;overflow:auto}.md h3{margin:0 0 6px}
 .fl{display:block;font-size:12px;color:var(--m);font-weight:600;margin:12px 0}
-input{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-radius:14px;background:var(--bg);color:var(--t);font:500 15px Montserrat,sans-serif}.chips~input{margin:0}
+input,select{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-radius:14px;background:var(--bg);color:var(--t);font:500 15px Montserrat,sans-serif}.chips~input{margin:0}
 .r{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 .day-header{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px;font-size:13px;font-weight:700;color:var(--m);border-bottom:1px solid var(--b);padding-bottom:4px}
 </style>
@@ -50,7 +50,7 @@ input{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-
 // ====== CONFIGURACIÓN DE SUPABASE ======
 const SUPABASE_URL = "https://dkevfipaqafwswdnvlrw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ncrsH45O6oJjQkGDx3dHAA_f5XpeNWU";
-// ======================================
+// ================================= =====
 
 const cols=['offices','emps','pk','mv','loans','pays'];let S={};cols.forEach(c=>S[c]=[]);
 let sb=null,cur='',tab='dash';
@@ -129,9 +129,9 @@ dash(){
 },
 emps(){const l=E().filter(e=>flt.emp=='all'||e.role==flt.emp);return`<div class="row sp">${sec('Equipo')}<button class="p s" onclick="empForm()">${ic('plus',16)} Agregar</button></div>${fch('emp',[['all','Todos'],['Delivery','Deliverys'],['Secretario','Secretarios'],['Auxiliar','Auxiliares']])}<div class="eg">${l.map(e=>`<div class="card"><div class="row" style="margin:0"><div class="av">${ini(e.name)}</div><div class="grow"><b>${e.name}</b><div><span class="tag">${e.role}</span></div></div><button class="ib" onclick="empForm('${e.id}')">${ic('edit',17)}</button><button class="ib d" onclick="conf('¿Eliminar a ${e.name}?',()=>del('emps','${e.id}'))">${ic('trash',17)}</button></div>${L('Sueldo base',e.role=='Delivery'?'—':$(e.base))}${L('Pago por paquete',$(e.rate))}</div>`).join('')||empty}</div>`},
 pk(){
-  const list = S.pk.filter(x=>x.o==cur&&(flt.pk=='all'||x.t==flt.pk)).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,50);
+  const [a,b] = rng(P);
+  const list = S.pk.filter(x=>x.o==cur && x.d>=a && x.d<=b && (flt.pk=='all'||x.t==flt.pk)).sort((x,y)=>y.d.localeCompare(x.d));
   
-  // Agrupar los paquetes por fecha
   const groups = {};
   list.forEach(item => {
     if (!groups[item.d]) groups[item.d] = [];
@@ -150,10 +150,10 @@ pk(){
 
     htmlGroups += `<div class="day-header"><span>📅 ${dateLabel}</span><span>${totalDayOut} entregados ${totalDayIn>0 ? '· '+totalDayIn+' rec.' : ''}</span></div>`;
     
-    htmlGroups += groups[date].map(x => `<div class="rc"><div class="ic">${ic(x.t=='out'?'up':'down')}</div><div class="grow"><b>${x.t=='out'?eName(x.e):'Paquetes recibidos'}</b><div class="sm">${x.d}</div></div><b>${x.n} paq.</b><button class="ib d" onclick="del('pk','${x.id}')">${ic('trash',16)}</button></div>`).join('');
+    htmlGroups += groups[date].map(x => `<div class="rc"><div class="ic">${ic(x.t=='out'?'up':'down')}</div><div class="grow"><b>${x.t=='out'?eName(x.e):'Paquetes recibidos'}</b><div class="sm">${x.d}</div></div><b>${x.n} paq.</b><button class="ib" onclick="pkForm('${x.t}','${x.id}')">${ic('edit',16)}</button><button class="ib d" onclick="conf('¿Borrar registro de ${x.n} paquetes?',()=>del('pk','${x.id}'))">${ic('trash',16)}</button></div>`).join('');
   });
 
-  return sec('Paquetes')+`<div class="acts"><button class="p big" onclick="pkForm('out')">${ic('up',18)} Entregados</button><button class="gh big" onclick="pkForm('in')">${ic('down',18)} Recibidos</button></div>${fch('pk',[['all','Todos'],['out','Entregados'],['in','Recibidos']])}${htmlGroups || empty}`;
+  return perBar() + sec('Paquetes')+`<div class="acts"><button class="p big" onclick="pkForm('out')">${ic('up',18)} Entregados</button><button class="gh big" onclick="pkForm('in')">${ic('down',18)} Recibidos</button></div>${fch('pk',[['all','Todos'],['out','Entregados'],['in','Recibidos']])}${htmlGroups || empty}`;
 },
 mv(){const l=S.mv.filter(x=>x.o==cur&&(flt.mv=='all'||x.t==flt.mv)).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,40);return`<div class="row sp">${sec('Movimientos')}<button class="p s" onclick="mvForm()">${ic('plus',16)} Registrar</button></div>${fch('mv',[['all','Todos'],...Object.entries(TY).map(([k,v])=>[k,v[1]])])}${l.map(x=>`<div class="rc"><div class="ic">${ic(TY[x.t][0])}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${TY[x.t][1]} · ${x.d}${x.t=='extra'?` · ${x.h||x.n} h${x.v?' '+$(x.v):''}`:''}</div></div><b>${x.t=='extra'&&!x.v?x.n+' h':$(x.n)}</b><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`).join('')||empty}`},
 loans(){const l=S.loans.filter(x=>x.o==cur);return`<div class="row sp">${sec('Préstamos')}<button class="p s" onclick="loanForm()">${ic('plus',16)} Nuevo</button></div>${l.map(x=>`<div class="card" style="margin-bottom:10px"><div class="row" style="margin:0"><b class="grow">${eName(x.e)}</b><span class="tag ${x.bal<=0?'ok':''}">${x.bal<=0?'Saldado':'Activo'}</span></div><div class="sm">Total ${$(x.total)} · cuota quincenal ${$(x.cuota)} · ${x.d}</div><div class="v">${$(x.bal)} <span class="sm">pendiente</span></div><div class="pr"><i style="width:${(1-x.bal/x.total)*100}%"></i></div><div class="row">${x.bal>0?`<button class="p s" onclick="conf('¿Registrar pago total de ${$(x.bal)}?',()=>put('loans',{...S.loans.find(z=>z.id=='${x.id}'),bal:0}))">${ic('check',15)} Pagar total</button><button class="gh s" onclick="loanForm('${x.id}')">${ic('edit',15)} Editar</button>`:''}<button class="gh s" onclick="del('loans','${x.id}')">${ic('trash',15)}</button></div></div>`).join('')||empty}`},
@@ -165,7 +165,13 @@ function conf(t,f){if(confirm(t))f()}
 const closeM=()=>M.innerHTML='';
 
 function form(t,f,cb,o={},af,keepOpen=false){
-  M.innerHTML=`<div class="bk" onclick="if(event.target==this)closeM()"><form class="md" id="fm"><h3>${t}</h3>${f.map(x=>{const dv=o[x.k]??(x.o?x.o[0][0]:'');return`<div class="fl" data-k="${x.k}">${x.l}${x.o?`<input type="hidden" name="${x.k}" value="${dv}"><div class="chips">${x.o.map(y=>`<button type="button" class="chip ${y[0]==dv?'on':''}" data-v="${y[0]}">${y[1]}</button>`).join('')}</div>`:`<input name="${x.k}" type="${x.t||'text'}" step="any" inputmode="${x.t=='number'?'decimal':'text'}" value="${dv}" ${x.opt?'':'required'}>`}</div>`}).join('')}<div class="r"><button type="button" class="gh" onclick="closeM()">${keepOpen?'Listo':'Cancelar'}</button><button class="p">${keepOpen?'Guardar y seguir':'Guardar'}</button></div></form></div>`;
+  M.innerHTML=`<div class="bk" onclick="if(event.target==this)closeM()"><form class="md" id="fm"><h3>${t}</h3>${f.map(x=>{
+    const dv=o[x.k]??(x.o?x.o[0][0]:'');
+    if(x.isSelect){
+      return`<div class="fl" data-k="${x.k}">${x.l}<select name="${x.k}">${x.o.map(y=>`<option value="${y[0]}" ${y[0]==dv?'selected':''}>${y[1]}</option>`).join('')}</select></div>`;
+    }
+    return`<div class="fl" data-k="${x.k}">${x.l}${x.o?`<input type="hidden" name="${x.k}" value="${dv}"><div class="chips">${x.o.map(y=>`<button type="button" class="chip ${y[0]==dv?'on':''}" data-v="${y[0]}">${y[1]}</button>`).join('')}</div>`:`<input name="${x.k}" type="${x.t||'text'}" step="any" inputmode="${x.t=='number'?'decimal':'text'}" value="${dv}" ${x.opt?'':'required'}>`}</div>`;
+  }).join('')}<div class="r"><button type="button" class="gh" onclick="closeM()">${keepOpen?'Listo':'Cancelar'}</button><button class="p">${keepOpen?'Guardar y seguir':'Guardar'}</button></div></form></div>`;
   
   fm.querySelectorAll('.chips').forEach(c=>c.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x==b));c.previousElementSibling.value=b.dataset.v;af&&af()});af&&af();
   
@@ -188,16 +194,20 @@ function form(t,f,cb,o={},af,keepOpen=false){
 const eo=()=>E().map(e=>[e.id,e.name]);
 function empForm(id){const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};form(id?'Editar empleado':'Nuevo empleado',[{k:'name',l:'Nombre'},{k:'role',l:'Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']]},{k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},{k:'rate',l:'Pago por paquete entregado',t:'number'}],d=>{put('emps',{...o,...d,o:cur})},o)}
 
-function pkForm(t){
+// FORMULARIO DE PAQUETES CON EDICIÓN
+function pkForm(t, id){
   if(t=='out'&&!E().length)return alert('Primero agrega personal');
   const isOut = t=='out';
+  const existing = id ? S.pk.find(x=>x.id==id) : null;
+  const initialData = existing || {d:today()};
+
   form(
-    isOut?'Paquetes entregados':'Paquetes recibidos',
-    [...(isOut?[{k:'e',l:'Delivery',o:eo()}]:[]),{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Cantidad de paquetes',t:'number'}],
-    async d=>{ await put('pk',{...d,t,o:cur}); },
-    {d:today()},
+    id ? (isOut ? 'Editar paquetes entregados' : 'Editar paquetes recibidos') : (isOut ? 'Paquetes entregados' : 'Paquetes recibidos'),
+    [...(isOut?[{k:'e',l:'Selecciona Delivery',o:eo(),isSelect:true}]:[]),{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Cantidad de paquetes',t:'number'}],
+    async d=>{ await put('pk',{...initialData, ...d, t, o:cur}); },
+    initialData,
     null,
-    isOut
+    isOut && !id // "Guardar y seguir" solo cuando se estén creando nuevos entregados
   )
 }
 
@@ -205,9 +215,9 @@ function mvForm(){if(!E().length)return alert('Primero agrega personal');
  const af=()=>{const ex=fm.t.value=='extra';[['n',!ex],['h',ex],['v',ex]].forEach(([k,v])=>fm.querySelector(`[data-k=${k}]`).style.display=v?'':'none');if(ex&&!fm.v.dataset.u)fm.v.value=O().ot??180;
   if(!fm.querySelector('#tt'))fm.querySelector('.r').insertAdjacentHTML('beforebegin','<div id="tt" class="card" style="text-align:center"></div>');
   const tt=()=>fm.querySelector('#tt').innerHTML=ex?`<span class="sm">Total horas extras</span><div class="v ok">${$(fm.h.value*fm.v.value)}</div>`:'';fm.v.oninput=()=>{fm.v.dataset.u=1};fm.oninput=tt;tt()};
- form('Nuevo movimiento',[{k:'e',l:'Empleado',o:eo()},{k:'t',l:'Tipo',o:Object.entries(TY).map(([k,v])=>[k,ic(v[0],15)+' '+v[1]])},{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Monto (RD$)',t:'number',opt:1},{k:'h',l:'Cantidad de horas extras',t:'number',opt:1},{k:'v',l:'Valor por hora (RD$ 180 por defecto, editable)',t:'number',opt:1}],d=>{if(d.t=='extra'){if(!(d.h>0&&d.v>0))return alert('Indica horas y valor por hora'),0;d.n=+(d.h*d.v).toFixed(2)}else{if(!(d.n>0))return alert('Indica el monto'),0;delete d.h;delete d.v}put('mv',{...d,o:cur})},{d:today()},af)}
+ form('Nuevo movimiento',[{k:'e',l:'Empleado',o:eo(),isSelect:true},{k:'t',l:'Tipo',o:Object.entries(TY).map(([k,v])=>[k,ic(v[0],15)+' '+v[1]])},{k:'d',l:'Fecha',t:'date'},{k:'n',l:'Monto (RD$)',t:'number',opt:1},{k:'h',l:'Cantidad de horas extras',t:'number',opt:1},{k:'v',l:'Valor por hora (RD$ 180 por defecto, editable)',t:'number',opt:1}],d=>{if(d.t=='extra'){if(!(d.h>0&&d.v>0))return alert('Indica horas y valor por hora'),0;d.n=+(d.h*d.v).toFixed(2)}else{if(!(d.n>0))return alert('Indica el monto'),0;delete d.h;delete d.v}put('mv',{...d,o:cur})},{d:today()},af)}
 
-function loanForm(id){if(!E().length)return alert('Primero agrega personal');const o=S.loans.find(x=>x.id==id)||{d:today()};form('Préstamo',[{k:'e',l:'Empleado',o:eo()},{k:'total',l:'Monto del préstamo',t:'number'},{k:'cuota',l:'Cuota por quincena',t:'number'},{k:'d',l:'Fecha',t:'date'}],d=>{put('loans',{...o,...d,bal:id?Math.min(o.bal,d.total):d.total,o:cur})},o)}
+function loanForm(id){if(!E().length)return alert('Primero agrega personal');const o=S.loans.find(x=>x.id==id)||{d:today()};form('Préstamo',[{k:'e',l:'Empleado',o:eo(),isSelect:true},{k:'total',l:'Monto del préstamo',t:'number'},{k:'cuota',l:'Cuota por quincena',t:'number'},{k:'d',l:'Fecha',t:'date'}],d=>{put('loans',{...o,...d,bal:id?Math.min(o.bal,d.total):d.total,o:cur})},o)}
 function offForm(id){const o=S.offices.find(x=>x.id==id)||{inc:90,rate:40,tax:3,ot:180};form(id?'Editar oficina':'Nueva oficina',[{k:'name',l:'Nombre'},{k:'inc',l:'Te pagan por paquete entregado',t:`number`},{k:'rate',l:'Pagas al delivery por paquete',t:`number`},{k:'ot',l:'Pago por hora extra',t:'number'},{k:'tax',l:'Impuesto %',t:`number`}],d=>{put('offices',{...o,...d});if(!id){cur=S.offices[S.offices.length-1].id;ls('off',cur);render()}},o)}
 const newOffice=()=>offForm();
 function pay(id){const e=S.emps.find(x=>x.id==id),c=calc(e);S.loans.filter(l=>l.e==id&&l.bal>0).forEach(l=>{put('loans',{...l,bal:l.bal-Math.min(l.cuota,l.bal)})});put('pays',{...c,id:pk2(P)+id,e:id,o:cur,per:pk2(P),date:today()})}
