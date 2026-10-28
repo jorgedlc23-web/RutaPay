@@ -100,16 +100,18 @@ const E=()=>S.emps.filter(e=>e.o==cur);
 const eName=id=>(S.emps.find(e=>e.id==id)||{name:'—'}).name;
 
 function calc(e,p0){
- const o=O(),[a,b]=rng(p0||P),inn=d=>d>=a&&d<=b,sum=t=>S.mv.filter(m=>m.e==e.id&&(m.t==t||(!m.t&&t=='extra'))&&inn(m.d)).reduce((s,m)=>s+m.n,0);
+ const o=O(),[a,b]=rng(p0||P);
+ const inn=d=>!d||(d>=a&&d<=b);
+ const sum=t=>S.mv.filter(m=>m.e==e.id&&(m.t==t||(!m.t&&t=='extra'))&&inn(m.d)).reduce((s,m)=>s+m.n,0);
  const n=S.pk.filter(x=>x.e==e.id&&x.t=='out'&&inn(x.d)).reduce((s,x)=>s+x.n,0),del=e.role=='Delivery';
  const base=del?0:e.base/2;
  
- // CALCULO DE HORAS EXTRAS CORREGIDO: Soporta tanto 'extra' como registros tipo null/horas sueltas
- const ext=S.mv.filter(m=>m.e==e.id&&(m.t=='extra'||(!m.t&&m.h>0))&&inn(m.d)).reduce((q,m)=>{
-   if(m.n > 0 && (!m.h || m.n > m.h)) return q + m.n; 
-   const rate = m.v || o.ot || 180;
+ // SUMA Y EVALUACIÓN DIRECTA DE HORAS EXTRAS
+ const ext=S.mv.filter(m=>m.e==e.id&&(m.t=='extra'||!m.t||m.h>0)&&inn(m.d)).reduce((q,m)=>{
+   const tarifa = m.v || o.ot || 180;
+   if(m.n > 0 && (!m.h || m.n > m.h)) return q + m.n;
    const hrs = m.h || m.n || 0;
-   return q + (hrs * rate);
+   return q + (hrs * tarifa);
  }, 0);
 
  const pp=n*e.rate,bon=sum('bono'),vac=sum('vac');
@@ -214,7 +216,7 @@ pk(){
   return perBar() + sec('Paquetes')+`<div class="acts"><button class="p big" onclick="pkForm('out')">${ic('up',18)} Entregados</button><button class="gh big" onclick="pkForm('in')">${ic('down',18)} Recibidos</button></div>${fch('pk',[['all','Todos'],['out','Entregados'],['in','Recibidos']])}${htmlGroups || empty}`;
 },
 mv(){
-  const l=S.mv.filter(x=>x.o==cur&&(flt.mv=='all'||x.t==flt.mv||(!x.t&&flt.mv=='extra'))).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,40);
+  const l=S.mv.filter(x=>x.o==cur&&(flt.mv=='all'||x.t==flt.mv||(!x.t&&flt.mv=='extra'))).sort((a,b)=>(b.d||'').localeCompare(a.d||'')).slice(0,40);
   return`<div class="row sp">${sec('Movimientos')}<button class="p s" onclick="mvForm()">${ic('plus',16)} Registrar</button></div>${fch('mv',[['all','Todos'],...Object.entries(TY).map(([k,v])=>[k,v[1]])])}${l.map(x=>{
     const typeKey = x.t || 'extra';
     const typeLabel = TY[typeKey] ? TY[typeKey][1] : 'Horas extras';
@@ -223,7 +225,7 @@ mv(){
     const montoCalculado = typeKey === 'extra' ? (x.n > 0 && (!x.h || x.n > x.h) ? x.n : (x.h || x.n || 0) * tarifa) : x.n;
     const descExtra = typeKey === 'extra' ? ` · ${(x.h||x.n||0)} h (${$(montoCalculado)})` : '';
     
-    return`<div class="rc"><div class="ic">${ic(typeIcon)}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${typeLabel} · ${x.d}${descExtra}</div></div><b>${$(montoCalculado)}</b><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`;
+    return`<div class="rc"><div class="ic">${ic(typeIcon)}</div><div class="grow"><b>${eName(x.e)}</b><div class="sm">${typeLabel} · ${x.d||today()}${descExtra}</div></div><b>${$(montoCalculado)}</b><button class="ib d" onclick="del('mv','${x.id}')">${ic('trash',16)}</button></div>`;
   }).join('')||empty}`
 },
 loans(){const l=S.loans.filter(x=>x.o==cur);return`<div class="row sp">${sec('Préstamos')}<button class="p s" onclick="loanForm()">${ic('plus',16)} Nuevo</button></div>${l.map(x=>`<div class="card" style="margin-bottom:10px"><div class="row" style="margin:0"><b class="grow">${eName(x.e)}</b><span class="tag ${x.bal<=0?'ok':''}">${x.bal<=0?'Saldado':'Activo'}</span></div><div class="sm">Total ${$(x.total)} · cuota quincenal ${$(x.cuota)} · ${x.d}</div><div class="v">${$(x.bal)} <span class="sm">pendiente</span></div><div class="pr"><i style="width:${(1-x.bal/x.total)*100}%"></i></div><div class="row">${x.bal>0?`<button class="p s" onclick="conf('¿Registrar pago total de ${$(x.bal)}?',()=>put('loans',{...S.loans.find(z=>z.id=='${x.id}'),bal:0}))">${ic('check',15)} Pagar total</button><button class="gh s" onclick="loanForm('${x.id}')">${ic('edit',15)} Editar</button>`:''}<button class="gh s" onclick="del('loans','${x.id}')">${ic('trash',15)}</button></div></div>`).join('')||empty}`},
@@ -342,6 +344,7 @@ function mvForm(){
         d.h = cantHoras;
         d.n = +(cantHoras * tarifaHora).toFixed(2);
       }
+      if(!d.d) d.d = today();
       if(!(d.n>0))return alert('Indica un monto o cantidad válida'),0;
       put('mv',{...d,o:cur});
     },
