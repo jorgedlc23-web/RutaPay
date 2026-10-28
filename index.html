@@ -40,7 +40,15 @@ button.s{padding:8px 13px;font-size:12px}button.p.big,button.gh.big{flex:1;paddi
 .fl{display:block;font-size:12px;color:var(--m);font-weight:600;margin:12px 0}
 input,select{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);border-radius:14px;background:var(--bg);color:var(--t);font:500 15px Montserrat,sans-serif}.chips~input{margin:0}
 .r{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-.day-header{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px;font-size:13px;font-weight:700;color:var(--m);border-bottom:1px solid var(--b);padding-bottom:4px}
+
+/* ESTILOS DESTACADOS PARA FECHAS Y CANTIDADES EN PAQUETES */
+.day-card{background:var(--c);border:1.5px solid var(--b);border-radius:16px;margin-bottom:12px;overflow:hidden}
+.day-header-btn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--c2);border:0;color:var(--t);font:700 14px Montserrat,sans-serif;cursor:pointer;text-align:left}
+.day-header-btn .date-title{display:flex;align-items:center;gap:8px;color:var(--p)}
+.day-header-btn .date-badge{font-size:12px;font-weight:700;background:var(--c);padding:4px 10px;border-radius:999px;border:1px solid var(--b);color:var(--t)}
+.day-body{padding:10px;display:block}
+.day-body.closed{display:none}
+.pkg-count-badge{background:var(--p);color:#fff;font-size:15px;font-weight:800;padding:5px 12px;border-radius:12px;min-width:65px;text-align:center}
 </style>
 </head>
 <body>
@@ -50,7 +58,7 @@ input,select{width:100%;margin-top:6px;padding:12px;border:1.5px solid var(--b);
 // ====== CONFIGURACIÓN DE SUPABASE ======
 const SUPABASE_URL = "https://dkevfipaqafwswdnvlrw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ncrsH45O6oJjQkGDx3dHAA_f5XpeNWU";
-// ================================= =====
+// ======================================
 
 const cols=['offices','emps','pk','mv','loans','pays'];let S={};cols.forEach(c=>S[c]=[]);
 let sb=null,cur='',tab='dash';
@@ -120,6 +128,14 @@ function render(){
   app.innerHTML=`<div class="top"><div class="tl"><div class="logo s">${LG(42)}</div><div class="grow">${WM}<div class="sm">${O().name||''}</div></div><button class="ib" onclick="th()">${ic('moon',18)}</button></div><div class="pills">${S.offices.map(o=>`<button class="chip ${o.id==cur?'on':''}" onclick="cur='${o.id}';ls('off',cur);render()">${ic('office',15)} ${o.name}</button>`).join('')}<button class="chip" onclick="newOffice()">${ic('plus',15)} Oficina</button></div></div><main>${V[tab]()}</main><nav>${T.map(t=>`<button class="${t[0]==tab?'on':''}" onclick="tab='${t[0]}';scrollTo(0,0);render()">${ic(t[1],20)}${t[2]}</button>`).join('')}</nav>`;
 }
 
+// Guardar qué días están abiertos/cerrados en la interfaz de Paquetes
+let openDays = {};
+
+function toggleDay(date){
+  openDays[date] = !openDays[date];
+  render();
+}
+
 const V={
 dash(){
   const all=S.offices.map(o=>({o,...stats(o.id)})),s=stats(cur),mx=Math.max(1,...all.map(x=>Math.max(x.out,x.inn))),rank=E().filter(e=>e.role=='Delivery').map(e=>({e,n:calc(e).n})).sort((a,b)=>b.n-a.n).slice(0,5),g=s.rev-s.cost;
@@ -145,12 +161,36 @@ pk(){
     const totalDayOut = groups[date].filter(x=>x.t=='out').reduce((s,x)=>s+x.n,0);
     const totalDayIn = groups[date].filter(x=>x.t=='in').reduce((s,x)=>s+x.n,0);
     
+    // El día de hoy siempre aparece abierto por defecto, los días pasados cerrados hasta dar un toque
+    if (openDays[date] === undefined) {
+      openDays[date] = (date === tDay);
+    }
+    const isOpen = openDays[date];
     let dateLabel = date;
-    if (date === tDay) dateLabel = 'Hoy (' + date + ')';
+    if (date === tDay) dateLabel = 'HOY (' + date + ')';
 
-    htmlGroups += `<div class="day-header"><span>📅 ${dateLabel}</span><span>${totalDayOut} entregados ${totalDayIn>0 ? '· '+totalDayIn+' rec.' : ''}</span></div>`;
-    
-    htmlGroups += groups[date].map(x => `<div class="rc"><div class="ic">${ic(x.t=='out'?'up':'down')}</div><div class="grow"><b>${x.t=='out'?eName(x.e):'Paquetes recibidos'}</b><div class="sm">${x.d}</div></div><b>${x.n} paq.</b><button class="ib" onclick="pkForm('${x.t}','${x.id}')">${ic('edit',16)}</button><button class="ib d" onclick="conf('¿Borrar registro de ${x.n} paquetes?',()=>del('pk','${x.id}'))">${ic('trash',16)}</button></div>`).join('');
+    htmlGroups += `
+      <div class="day-card">
+        <button class="day-header-btn" onclick="toggleDay('${date}')">
+          <span class="date-title">📅 <b>${dateLabel}</b></span>
+          <span class="date-badge">Total: ${totalDayOut} paq. ${isOpen ? '▲' : '▼'}</span>
+        </button>
+        <div class="day-body ${isOpen ? '' : 'closed'}">
+          ${groups[date].map(x => `
+            <div class="rc">
+              <div class="ic">${ic(x.t=='out'?'up':'down')}</div>
+              <div class="grow">
+                <b style="font-size:15px;color:var(--t);">${x.t=='out'?eName(x.e):'Paquetes recibidos'}</b>
+                <div class="sm">${x.d}</div>
+              </div>
+              <div class="pkg-count-badge">${x.n} paq.</div>
+              <button class="ib" onclick="pkForm('${x.t}','${x.id}')">${ic('edit',16)}</button>
+              <button class="ib d" onclick="conf('¿Borrar registro de ${x.n} paquetes?',()=>del('pk','${x.id}'))">${ic('trash',16)}</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
   });
 
   return perBar() + sec('Paquetes')+`<div class="acts"><button class="p big" onclick="pkForm('out')">${ic('up',18)} Entregados</button><button class="gh big" onclick="pkForm('in')">${ic('down',18)} Recibidos</button></div>${fch('pk',[['all','Todos'],['out','Entregados'],['in','Recibidos']])}${htmlGroups || empty}`;
@@ -194,7 +234,6 @@ function form(t,f,cb,o={},af,keepOpen=false){
 const eo=()=>E().map(e=>[e.id,e.name]);
 function empForm(id){const o=S.emps.find(x=>x.id==id)||{role:'Delivery',rate:O().rate,base:0};form(id?'Editar empleado':'Nuevo empleado',[{k:'name',l:'Nombre'},{k:'role',l:'Rol',o:[['Delivery','Delivery'],['Secretario','Secretario'],['Auxiliar','Auxiliar']]},{k:'base',l:'Sueldo base mensual (no aplica a Delivery)',t:'number',opt:1},{k:'rate',l:'Pago por paquete entregado',t:'number'}],d=>{put('emps',{...o,...d,o:cur})},o)}
 
-// FORMULARIO DE PAQUETES CON EDICIÓN
 function pkForm(t, id){
   if(t=='out'&&!E().length)return alert('Primero agrega personal');
   const isOut = t=='out';
@@ -207,7 +246,7 @@ function pkForm(t, id){
     async d=>{ await put('pk',{...initialData, ...d, t, o:cur}); },
     initialData,
     null,
-    isOut && !id // "Guardar y seguir" solo cuando se estén creando nuevos entregados
+    isOut && !id
   )
 }
 
