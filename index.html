@@ -311,7 +311,7 @@ function pkForm(t, id){
   )
 }
 
-// FORMULARIO DE MOVIMIENTOS - CORREGIDO SELECTOR DE FECHA
+// FORMULARIO DE MOVIMIENTOS - CORREGIDO DEFINITIVAMENTE
 function mvForm(){
   if(!E().length)return alert('Primero agrega personal');
   
@@ -321,9 +321,10 @@ function mvForm(){
       const tipo = tipoSelect ? tipoSelect.value : 'extra';
       const isExtra = tipo === 'extra';
       const labelMonto = isExtra ? 'Cantidad de horas extras' : 'Monto total (RD$)';
-      const inputMonto = fm.querySelector('[data-k="n"]');
-      if(inputMonto) {
-        inputMonto.previousSibling.textContent = labelMonto;
+      const inputContainer = fm.querySelector('[data-k="n"]');
+      if(inputContainer) {
+        const labelNode = Array.from(inputContainer.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+        if(labelNode) labelNode.textContent = labelMonto;
       }
     };
     if(tipoSelect) tipoSelect.onchange = updateLabel;
