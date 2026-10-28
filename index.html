@@ -311,17 +311,23 @@ function pkForm(t, id){
   )
 }
 
+// FORMULARIO DE MOVIMIENTOS - CORREGIDO SELECTOR DE FECHA
 function mvForm(){
   if(!E().length)return alert('Primero agrega personal');
   
   const af=()=>{
-    const tipo = fm.t.value;
-    const isExtra = tipo === 'extra';
-    const labelMonto = isExtra ? 'Cantidad de horas extras' : 'Monto total (RD$)';
-    const inputMonto = fm.querySelector('[data-k="n"]');
-    if(inputMonto) {
-      inputMonto.previousSibling.textContent = labelMonto;
-    }
+    const tipoSelect = fm.querySelector('select[name="t"]');
+    const updateLabel = () => {
+      const tipo = tipoSelect ? tipoSelect.value : 'extra';
+      const isExtra = tipo === 'extra';
+      const labelMonto = isExtra ? 'Cantidad de horas extras' : 'Monto total (RD$)';
+      const inputMonto = fm.querySelector('[data-k="n"]');
+      if(inputMonto) {
+        inputMonto.previousSibling.textContent = labelMonto;
+      }
+    };
+    if(tipoSelect) tipoSelect.onchange = updateLabel;
+    updateLabel();
     const hField = fm.querySelector('[data-k="h"]');
     if(hField) hField.style.display = 'none';
   };
@@ -330,15 +336,13 @@ function mvForm(){
     'Nuevo movimiento',
     [
       {k:'e',l:'Empleado',o:eo(),isSelect:true},
-      {k:'t',l:'Tipo de movimiento',o:Object.entries(TY).map(([k,v])=>[k,ic(v[0],15)+' '+v[1]]),isSelect:true},
+      {k:'t',l:'Tipo de movimiento',o:Object.entries(TY).map(([k,v])=>[k,v[1]]),isSelect:true},
       {k:'d',l:'Fecha',t:'date'},
-      {k:'n',l:'Monto (RD$) / Cantidad',t:'number'},
+      {k:'n',l:'Cantidad de horas extras',t:'number'},
       {k:'h',l:'Oculto',t:'number',opt:1}
     ],
     d=>{
-      // Se respeta estrictamente la fecha seleccionada por el usuario (si por alguna razón viene vacía, usa today)
       if(!d.d) d.d = today();
-      
       if(d.t=='extra' || !d.t){
         d.t = 'extra';
         const tarifaHora = O().ot ?? 180;
