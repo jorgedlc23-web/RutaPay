@@ -311,7 +311,6 @@ function pkForm(t, id){
   )
 }
 
-// FIX DE FECHA EN REGISTRO DE MOVIMIENTO
 function mvForm(){
   if(!E().length)return alert('Primero agrega personal');
   
@@ -337,8 +336,9 @@ function mvForm(){
       {k:'h',l:'Oculto',t:'number',opt:1}
     ],
     d=>{
-      // Respeta fielmente la fecha seleccionada por el usuario
+      // Se respeta estrictamente la fecha seleccionada por el usuario (si por alguna razón viene vacía, usa today)
       if(!d.d) d.d = today();
+      
       if(d.t=='extra' || !d.t){
         d.t = 'extra';
         const tarifaHora = O().ot ?? 180;
